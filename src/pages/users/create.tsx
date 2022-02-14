@@ -33,15 +33,12 @@ export default function CreateUser() {
 
   const createUser = useMutation(async (user: CreateUserFormData) => {
     const api = setupAPIClient();
-    
     const response = await api.post('users', {
-      user: {
-        ...user,
-        created_at: new Date()
-      }
+      ...user
     });
 
-    return response.data.user;
+      return response.data.user;
+    
   }, {
     onSuccess: () => {
       queryClient.invalidateQueries('users');
@@ -49,13 +46,22 @@ export default function CreateUser() {
     }
   });
 
-  const { register, handleSubmit, formState } = useForm({
+  const { register, handleSubmit, formState, setError } = useForm({
     resolver: yupResolver(createUserFormSchema)
   });
   const { errors }  = formState;
 
   const handleCreateUser: SubmitHandler<CreateUserFormData> = async (values) => {
-    await createUser.mutateAsync(values);
+    try {
+      await createUser.mutateAsync(values);
+    } catch(err) {
+      const inner = err.response.data.inner;
+      inner.forEach(item => setError(item.path, {
+        type: "manual",
+        message: item.message,
+      }));
+    }
+
     console.log(values);
   }
 
@@ -78,7 +84,7 @@ export default function CreateUser() {
 
           <VStack spacing="8">
             <SimpleGrid minChildWidth="240px" spacing={["6", "8"]} width="100%">
-              <Input name="name" label="Username" error={errors.username} {...register('name')}/>
+              <Input name="username" label="Username" error={errors.username} {...register('username')}/>
               <Input name="email" type="email" label="E-mail" error={errors.email} {...register('email')}/>
             </SimpleGrid>
 
