@@ -1,4 +1,4 @@
-import { Flex, Button, Stack } from '@chakra-ui/react';
+import { Flex, Button, Stack, useToast } from '@chakra-ui/react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Input } from '../components/Form/Input';
 import * as yup from 'yup';
@@ -19,19 +19,37 @@ const signInFormSchema = yup.object().shape({
 });
 
 export default function SignIn() {
+  const toast = useToast();
   const { signIn } = useAuth();
   const { register, handleSubmit, formState, setValue } = useForm({
     resolver: yupResolver(signInFormSchema),
   });
   const { errors } = formState;
 
-  useEffect(() => {
-    setValue('username', 'admin');
-    setValue('password', '123456');
-  }, []);
-
   const handleSignIn: SubmitHandler<SignInFormData> = async (values) => {
-    await signIn(values);
+    try {
+      await signIn(values);
+    } catch (err) {
+      if(err.response.status === 404) {
+        toast({
+          title: 'Usuário não encontrado.',
+          status: 'error',
+          position: 'top'
+        });
+      } else if(err.response.status === 401) {
+        toast({
+          title: 'Username/Password inválidos.',
+          status: 'error',
+          position: 'top'
+        });
+      } else {
+        toast({
+          title: 'Instabilidade com o servidor detectada, tente novamente mais tarde!',
+          status: 'error',
+          position: 'top'
+        });
+      }
+    }
   }
 
   return (
