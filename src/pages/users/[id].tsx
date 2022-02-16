@@ -13,23 +13,24 @@ import { setupAPIClient } from "../../services/api";
 import { queryClient } from "../../services/queryClient";
 import { useRouter } from "next/router";
 import { withSRRAuth } from "../../utils/withSSRAuth";
+import { useEffect } from "react";
+import { api } from "../../services/apiClient";
+import { useUser } from "../../services/hooks/useUser";
 
 type CreateUserFormData = {
   username: string;
   email: string;
-  password: string;
-  passwordConfirmation: string;
+  createdAt: string;
 }
 
 const createUserFormSchema = yup.object().shape({
   username: yup.string().required('Username obrigatório'),
   email: yup.string().required('E-mail obrigatório').email('E-mail inválido'),
-  password: yup.string().required('Senha obrigatória').min(6, 'No minimo 6 caracteres'),
-  passwordConfirmation: yup.string().required('Confirmação da senha obrigatória').oneOf([null, yup.ref('password')], 'As senhas precisam ser iguais')
 });
 
-export default function CreateUser() {
+export default function UpdateUser() {
   const router = useRouter();
+  const userId = router.query.id;
   const toast = useToast();
 
   const createUser = useMutation(async (user: CreateUserFormData) => {
@@ -47,19 +48,26 @@ export default function CreateUser() {
     }
   });
 
-  const { register, handleSubmit, formState, setError } = useForm({
+  const { register, handleSubmit, formState, setError, setValue } = useForm({
     resolver: yupResolver(createUserFormSchema)
   });
-  const { errors }  = formState;
+  const { data, isLoading, isFetching, error } = useUser(Number(router.query.id));
+
+  useEffect(() => {
+    if(data) {
+      setValue('username', data.username);
+      setValue('email', data.email);
+      setValue('createdAt', data.createdAt);
+    }
+  }, [data]);
 
   const handleCreateUser: SubmitHandler<CreateUserFormData> = async (values) => {
     try {
-      await createUser.mutateAsync(values);
-
+      //await createUser.mutateAsync(values);
       toast({
-        title: 'Cadastro salvo com sucesso.',
+        title: 'Cadastro salvo com sucesso! (Fake message).',
         status: 'info',
-        position: 'top',
+        position: 'top'
       });
     } catch(err) {
       const inner = err.response?.data?.inner;
@@ -91,19 +99,14 @@ export default function CreateUser() {
           bg="gray.800"
           p={["6", "8"]}
           onSubmit={handleSubmit(handleCreateUser)}>
-          <Heading size="lg" fontWeight="normal">Criar usuário</Heading>
+          <Heading size="lg" fontWeight="normal">Editar usuário</Heading>
 
           <Divider my="6" borderColor="gray.700" />
 
           <VStack spacing="8">
             <SimpleGrid minChildWidth="240px" spacing={["6", "8"]} width="100%">
-              <Input name="username" label="Username" error={errors.username} {...register('username')}/>
-              <Input name="email" type="email" label="E-mail" error={errors.email} {...register('email')}/>
-            </SimpleGrid>
-
-            <SimpleGrid minChildWidth="240px" spacing={["6", "8"]} width="100%">
-              <Input name="password" type="password" label="Senha" error={errors.password} {...register('password')} />
-              <Input name="passwordConfirmation" type="password" label="Confirmação da senha" error={errors.passwordConfirmation} {...register('passwordConfirmation')}/>
+              <Input name="username" label="Username" error={formState.errors.username} {...register('username')}/>
+              <Input name="email" type="email" label="E-mail" error={formState.errors.email} {...register('email')}/>
             </SimpleGrid>
           </VStack>
 
@@ -133,5 +136,5 @@ export const getServerSideProps = withSRRAuth(async (ctx) => {
     }
   }
 }, {
-  roles: ['users.create']
+  roles: ['users.update']
 });

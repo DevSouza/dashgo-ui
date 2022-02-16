@@ -12,8 +12,10 @@ import { useUsers, getUsers } from "../../services/hooks/useUsers";
 import { queryClient } from "../../services/queryClient";
 import { withSRRAuth } from "../../utils/withSSRAuth";
 import { Can } from "../../components/Can";
+import { useRouter } from "next/router";
 
 export default function UserList({ users }) {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const { data, isLoading, isFetching, error } = useUsers(page, { 
     initialData: users,
@@ -98,16 +100,18 @@ export default function UserList({ users }) {
                       </Td>
                       { isWideVersion && (<Td>{user.createdAt}</Td>) }
                       <Td>
-                        <Button
-                            as="a"
-                            size="sm"
-                            fontSize="sm"
-                            colorScheme="purple"
-                            iconSpacing={isWideVersion ? '1.5' : '-0.5'}
-                            leftIcon={<Icon as={RiPencilLine} fontSize="16" />}
-                            >
-                              {isWideVersion && 'Editar'}
-                        </Button>
+                        <NextLink href={`/users/${user.userId}`} passHref>
+                          <Button
+                              as="a"
+                              size="sm"
+                              fontSize="sm"
+                              colorScheme="purple"
+                              iconSpacing={isWideVersion ? '1.5' : '-0.5'}
+                              leftIcon={<Icon as={RiPencilLine} fontSize="16" />}
+                              >
+                                {isWideVersion && 'Editar'}
+                          </Button>
+                        </NextLink>
                       </Td>
                     </Tr>
                   ))}
