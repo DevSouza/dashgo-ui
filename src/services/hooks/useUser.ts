@@ -6,6 +6,12 @@ type User = {
   username: string;
   email: string;
   createdAt: string;
+  permissions: Permission[];
+}
+
+type Permission = {
+  permissionId: number;
+  name: string;
 }
 
 export async function getUser(userId: number) : Promise<User> {
@@ -16,6 +22,7 @@ export async function getUser(userId: number) : Promise<User> {
     userId: data.userId,
     username: data.username,
     email: data.email,
+    permissions: data.permissions,
     createdAt: new Date(data.createdAt).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'long',

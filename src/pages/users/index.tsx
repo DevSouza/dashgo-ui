@@ -13,6 +13,20 @@ import { queryClient } from "../../services/queryClient";
 import { withSRRAuth } from "../../utils/withSSRAuth";
 import { Can } from "../../components/Can";
 import { useRouter } from "next/router";
+import { PermissionModal } from "../../components/Modal/PermissionModal";
+
+type User = {
+  userId: string;
+  username: string;
+  email: string;
+  createdAt: string;
+  permissions: Permission[];
+}
+
+type Permission = {
+  permissionId: number;
+  name: string;
+}
 
 export default function UserList({ users }) {
   const router = useRouter();
@@ -26,7 +40,7 @@ export default function UserList({ users }) {
     lg: true,
   });
   
-  async function handlePrefetchUser(userId: string) {
+  async function handlePrefetchUser(userId: number) {
     await queryClient.prefetchQuery(['user', userId], async () => {
 
       const api = setupAPIClient();
@@ -38,10 +52,9 @@ export default function UserList({ users }) {
     });
   }
 
-  /* MODAL */
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  function handleOpenModal(user) {
-    onOpen();
+  const [userId, setUserId] = useState<number>();
+  function onRequestClose() {
+    setUserId(undefined);
   }
 
   return (
@@ -109,14 +122,15 @@ export default function UserList({ users }) {
                         { isWideVersion && (<Td>{user.createdAt}</Td>) }
                         <Td>
                           <Button
-                                as="a"
-                                size="sm"
-                                fontSize="sm"
-                                colorScheme="purple"
-                                iconSpacing={'-0.5'}
-                                leftIcon={<Icon as={RiEyeOffLine} fontSize="16" />}
-                                onClick={() => handleOpenModal(user)}>
+                            as="a"
+                            size="sm"
+                            fontSize="sm"
+                            colorScheme="purple"
+                            iconSpacing={'-0.5'}
+                            leftIcon={<Icon as={RiEyeOffLine} fontSize="16" />}
+                            onClick={() => setUserId(user.userId)}>
                           </Button>
+
                         </Td>
                         <Td>
                           <NextLink href={`/users/${user.userId}`} passHref>
@@ -145,23 +159,7 @@ export default function UserList({ users }) {
         </Flex>
       </Box>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Modal Title</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <p>teste</p>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={onClose}>
-              Close
-            </Button>
-            <Button variant='ghost'>Secondary Action</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <PermissionModal userId={userId} onRequestClose={onRequestClose}/>
     </>
   );
 }

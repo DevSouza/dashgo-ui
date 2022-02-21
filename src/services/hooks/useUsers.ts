@@ -2,7 +2,7 @@ import { useQuery, UseQueryOptions, UseQueryResult } from "react-query";
 import { setupAPIClient } from "../api";
 
 type User = {
-  userId: string;
+  userId: number;
   username: string;
   email: string;
   createdAt: string;
