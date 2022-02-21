@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, ListItem, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Stack, toast, UnorderedList, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, Checkbox, ListItem, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Stack, toast, UnorderedList, useDisclosure, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { setupAPIClient } from "../../services/api";
 import { useUser } from "../../services/hooks/useUser";
@@ -32,6 +32,7 @@ type PermissionModalProps = {
 export function PermissionModal({ userId, onRequestClose }: PermissionModalProps) {
 
   const api = setupAPIClient();
+  const toast = useToast();
   const [permissionsUser, setPermissionsUser] = useState<Permission[]>([]);
   const [rolesUser, setRolesUser] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -77,9 +78,18 @@ export function PermissionModal({ userId, onRequestClose }: PermissionModalProps
         permissions: permissionsUser,
         roles: rolesUser,
       });
+      toast({
+        title: 'Permissões atualizadas.',
+        status: 'info',
+        position: 'top',
+      });
       onRequestClose();
     } catch (err) {
-
+      toast({
+        title: 'Error ao atualizar permissões.',
+        status: 'error',
+        position: 'top',
+      });
     }
   }
 
