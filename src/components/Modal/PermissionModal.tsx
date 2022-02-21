@@ -104,7 +104,7 @@ export function PermissionModal({ userId, onRequestClose }: PermissionModalProps
           <Stack pl={6} mt={1} spacing={1}>
             {permissions.map(permission => (
               
-              <Box>
+              <Box key={permission.permissionId}>
                 <Checkbox
                   isChecked={!!(permissionsUser.find(item => item.permissionId === permission.permissionId))}
                   onChange={(e) => onChangePermission(e.target.checked, permission)}>
@@ -113,6 +113,7 @@ export function PermissionModal({ userId, onRequestClose }: PermissionModalProps
                 <Stack pl={6} mt={1} spacing={1}>
                   {permission?.defaultRoles.map(role => (
                     <Checkbox
+                      key={role.roleId}
                       color="gray.400" fontSize="sm"
                       isChecked={!!(rolesUser.find(item => item.roleId === role.roleId))}
                       onChange={(e) => onChangeRole(e.target.checked, role)}>
